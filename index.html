@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini E-Learning Platform</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f7f9fb;
+      margin: 0;
+      padding: 0;
+      color: #222;
+    }
+    #app {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      padding: 32px 24px;
+    }
+    h1, h2 {
+      margin-top: 0;
+      font-weight: 600;
+    }
+    .course-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .course-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f1f5f9;
+      margin-bottom: 16px;
+      padding: 18px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .course-item:hover {
+      background: #e0e7ef;
+    }
+    .course-title {
+      font-size: 1.1em;
+      font-weight: 500;
+    }
+    .status-badge {
+      font-size: 0.9em;
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: #e2e8f0;
+      color: #555;
+    }
+    .status-badge.completed {
+      background: #c6f6d5;
+      color: #276749;
+    }
+    .button {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+      margin-top: 18px;
+      transition: background 0.2s, box-shadow 0.2s;
+      box-shadow: 0 1px 4px rgba(37,99,235,0.07);
+    }
+    .button:hover {
+      background: #1d4ed8;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.13);
+    }
+    .lesson-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 18px 0;
+    }
+    .lesson-item {
+      padding: 10px 0;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 1em;
+    }
+    .progress-bar-bg {
+      background: #e5e7eb;
+      border-radius: 8px;
+      height: 14px;
+      width: 100%;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      background: #2563eb;
+      height: 100%;
+      border-radius: 8px 0 0 8px;
+      transition: width 0.3s;
+    }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 18px;
+      color: #2563eb;
+      text-decoration: none;
+      font-size: 0.98em;
+      transition: color 0.2s;
+    }
+    .back-link:hover {
+      color: #1d4ed8;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    // Course data
+    const courses = [
+      {
+        id: 1,
+        title: "HTML Basics",
+        description: "Learn the structure of web pages using HTML.",
+        lessons: [
+          "Introduction to HTML",
+          "HTML Elements",
+          "Links and Images",
+          "Lists and Tables"
+        ],
+        completed: false
+      },
+      {
+        id: 2,
+        title: "CSS Fundamentals",
+        description: "Style your web pages with CSS.",
+        lessons: [
+          "CSS Syntax",
+          "Selectors and Properties",
+          "Box Model",
+          "Flexbox & Grid"
+        ],
+        completed: false
+      },
+      {
+        id: 3,
+        title: "JavaScript Essentials",
+        description: "Add interactivity to your web pages.",
+        lessons: [
+          "Variables & Data Types",
+          "Functions",
+          "DOM Manipulation",
+          "Events"
+        ],
+        completed: false
+      }
+    ];
+
+    // App state
+    let currentView = 'home'; // 'home' or 'course'
+    let selectedCourseId = null;
+
+    function $(selector) {
+      return document.querySelector(selector);
+    }
+
+    function renderHome() {
+      currentView = 'home';
+      selectedCourseId = null;
+      let html = `<h1>Courses</h1>
+        <ul class="course-list">`;
+      courses.forEach(course => {
+        html += `
+          <li class="course-item" onclick="showCourse(${course.id})">
+            <span class="course-title">${course.title}</span>
+            <span class="status-badge${course.completed ? ' completed' : ''}">
+              ${course.completed ? 'Completed' : 'In Progress'}
+            </span>
+          </li>
+        `;
+      });
+      html += `</ul>`;
+      $('#app').innerHTML = html;
+    }
+
+    function renderCourse(course) {
+      currentView = 'course';
+      selectedCourseId = course.id;
+      const completed = course.completed;
+      let html = `
+        <a href="#" class="back-link" onclick="goHome(event)">← Back to Courses</a>
+        <h2>${course.title}</h2>
+        <p>${course.description}</p>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" style="width:${completed ? 100 : 0}%"></div>
+        </div>
+        <div style="margin-bottom:10px;font-size:0.98em;">
+          Progress: <strong>${completed ? '100%' : '0%'}</strong>
+        </div>
+        <ul class="lesson-list">
+          ${course.lessons.map(lesson => `<li class="lesson-item">${lesson}</li>`).join('')}
+        </ul>
+        <button class="button" onclick="markCompleted(${course.id})" ${completed ? 'disabled' : ''}>
+          ${completed ? 'Course Completed' : 'Mark as Completed'}
+        </button>
+      `;
+      $('#app').innerHTML = html;
+    }
+
+    window.showCourse = function(id) {
+      const course = courses.find(c => c.id === id);
+      if (course) renderCourse(course);
+    }
+
+    window.goHome = function(e) {
+      e.preventDefault();
+      renderHome();
+    }
+
+    window.markCompleted = function(id) {
+      const course = courses.find(c => c.id === id);
+      if (course && !course.completed) {
+        course.completed = true;
+        renderCourse(course);
+      }
+    }
+
+    // Initial render
+    renderHome();
+  </script>
+</body>
+</html>
